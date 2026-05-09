@@ -63,8 +63,8 @@ def fetch_repo_metadata(github_url: str) -> str:
         f"Stars: {data.get('stargazers_count')}\n"
         f"Forks: {data.get('forks_count')}\n"
         f"Language: {data.get('language')}\n"
-        f"Topics: {', '.join(data.get('topics', []))}\n"
-        f"License: {data.get('license', {}).get('name', 'None')}\n"
+        f"Topics: {', '.join(data.get('topics') or [])}\n"
+        f"License: {(data.get('license') or {}).get('name', 'None')}\n"
         f"Last pushed: {data.get('pushed_at')}\n"
         f"Open issues: {data.get('open_issues_count')}\n"
         f"Homepage: {data.get('homepage')}\n"
@@ -280,7 +280,7 @@ def fetch_pr_and_contributor_data(github_url: str) -> str:
         if prs:
             lines = []
             for p in prs:
-                lines.append(f"- PR #{p['number']}: {p['title']} by {p.get('user', {}).get('login', 'unknown')}")
+                lines.append(f"- PR #{p['number']}: {p['title']} by {(p.get('user') or {}).get('login', 'unknown')}")
             prs_summary = "\n".join(lines)
 
     cont_url = f"https://api.github.com/repos/{owner}/{repo}/contributors"

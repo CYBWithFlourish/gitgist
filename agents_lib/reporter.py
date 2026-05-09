@@ -37,54 +37,57 @@ def format_report(analysis_json: str, github_url: str) -> str:
     except Exception:
         return f"# GitGist Report\n\n**Source:** {github_url}\n\n{analysis_json}"
 
+    if not isinstance(data, dict):
+        return f"# GitGist Report\n\n**Source:** {github_url}\n\n{analysis_json}"
+
     # Build health bar
-    health = data.get("health_score", 0)
+    health = data.get("health_score") or 0
     bar = _health_bar(health)
 
     # Tech stack badges
-    stack = data.get("tech_stack", [])
+    stack = data.get("tech_stack") or []
     stack_str = "  ".join(f"`{t}`" for t in stack) if stack else "_unknown_"
 
     # Open problems
-    problems = data.get("open_problems", [])
+    problems = data.get("open_problems") or []
     problems_md = "\n".join(f"- {p}" for p in problems) if problems else "- None reported"
 
     # Key features
-    features = data.get("key_features", [])
+    features = data.get("key_features") or []
     features_md = "\n".join(f"- {f}" for f in features) if features else "- Not detected"
 
     # Prerequisites
-    prereqs = data.get("prerequisites", [])
+    prereqs = data.get("prerequisites") or []
     prereqs_md = ", ".join(prereqs) if prereqs else "None"
 
     # Health reasons
-    health_reasons = data.get("health_reasons", [])
+    health_reasons = data.get("health_reasons") or []
     health_md = "\n".join(f"- {r}" for r in health_reasons)
 
     # Advanced Features Extract
 
     # Dependencies
-    deps = data.get("dependencies", {})
-    deps_score = deps.get("security_score", 100)
+    deps = data.get("dependencies") or {}
+    deps_score = deps.get("security_score") or 100
     deps_bar = _health_bar(deps_score)
-    deps_issues = deps.get("issues", [])
+    deps_issues = deps.get("issues") or []
     deps_issues_md = "\n".join(f"- {i}" for i in deps_issues) if deps_issues else "- No dependency issues found."
 
     # Tree
-    tree_md = data.get("directory_tree", "Not found").strip()
+    tree_md = (data.get("directory_tree") or "Not found").strip()
 
     # Code Quality
-    quality = data.get("code_quality_review", {})
-    quality_rating = quality.get("rating", "?")
-    readability = quality.get("readability", "No details.")
-    bottlenecks = quality.get("bottlenecks", "None detected.")
-    suggestions = quality.get("suggestions", [])
+    quality = data.get("code_quality_review") or {}
+    quality_rating = quality.get("rating") or "?"
+    readability = quality.get("readability") or "No details."
+    bottlenecks = quality.get("bottlenecks") or "None detected."
+    suggestions = quality.get("suggestions") or []
     suggestions_md = "\n".join(f"- {s}" for s in suggestions) if suggestions else "- No suggestions."
 
     # Community Health
-    comm = data.get("community_health", {})
-    open_prs = comm.get("open_prs", "?")
-    activity_summary = comm.get("activity_summary", "No activity summary available.")
+    comm = data.get("community_health") or {}
+    open_prs = comm.get("open_prs") or "?"
+    activity_summary = comm.get("activity_summary") or "No activity summary available."
 
     report = f"""# 🔍 GitGist Report
 

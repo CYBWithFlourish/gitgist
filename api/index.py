@@ -147,7 +147,7 @@ def index():
 def proxy_scraper():
     """In-memory Scraper endpoint called by Superplane Canvas."""
     body = request.get_json(silent=True) or {}
-    github_url = body.get("content", "").strip() or body.get("github_url", "").strip()
+    github_url = (body.get("content") or "").strip() or (body.get("github_url") or "").strip()
     if not github_url:
         github_url = "https://github.com/fastapi/fastapi"
     print(f"[Superplane Action] Calling Scraper for: {github_url}")
@@ -387,7 +387,7 @@ def superplane_result():
 def start_analysis():
     """Frontend entry point to initiate asynchronous pipeline."""
     body = request.get_json(force=True)
-    github_url = body.get("url", "").strip()
+    github_url = (body.get("url") or "").strip()
     send_discord = body.get("send_discord", False)
     send_telegram = body.get("send_telegram", False)
     send_notion = body.get("send_notion", False)
@@ -455,8 +455,8 @@ def superplane_trigger():
 def deep_dive():
     """Execute the Deep Diver Agent in-memory to find advanced docs and guides."""
     body = request.get_json(silent=True) or {}
-    github_url = body.get("url", "").strip() or body.get("github_url", "").strip() or body.get("content", "").strip()
-    project_name = body.get("name", "the project").strip()
+    github_url = (body.get("url") or "").strip() or (body.get("github_url") or "").strip() or (body.get("content") or "").strip()
+    project_name = (body.get("name") or "the project").strip()
 
     if not github_url:
         github_url = "https://github.com/fastapi/fastapi"
