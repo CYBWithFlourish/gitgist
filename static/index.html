@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitGist — AI GitHub Intelligence</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #070709;
+    --surface: rgba(255, 255, 255, 0.03);
+    --surface2: rgba(255, 255, 255, 0.06);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(100, 108, 255, 0.4);
+    --text: #ffffff;
+    --text-muted: #8F91A2;
+    --accent: #646CFF;
+    --accent-glow: rgba(100, 108, 255, 0.3);
+    --accent2: #D500F9;
+    --warning: #FFAB00;
+    --error: #FF1744;
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Ambient Glow Backgrounds */
+  .ambient-glow {
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    filter: blur(160px);
+    opacity: 0.08;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .glow-top-left {
+    top: -10%;
+    left: -10%;
+    background: var(--accent);
+  }
+  .glow-bottom-right {
+    bottom: -10%;
+    right: -10%;
+    background: var(--accent2);
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    backdrop-filter: blur(12px);
+    background: rgba(7, 7, 9, 0.7);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo span {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 13px;
+  }
+
+  .powered {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.3s;
+  }
+  .pill:hover {
+    border-color: var(--border-hover);
+    color: var(--text);
+    box-shadow: 0 0 10px var(--accent-glow);
+  }
+
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem;
+  }
+
+  .hero {
+    text-align: center;
+    margin-bottom: 3.5rem;
+  }
+
+  .hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -1px;
+    color: var(--text);
+    margin-bottom: 1rem;
+    line-height: 1.15;
+  }
+
+  .hero h1 .highlight {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    max-width: 540px;
+    margin: 0 auto;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 8px;
+    border-radius: 20px;
+    backdrop-filter: blur(16px);
+    transition: all 0.3s;
+  }
+
+  .input-row:focus-within {
+    border-color: var(--border-hover);
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  input[type="text"] {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 15px;
+    padding: 12px 18px;
+    outline: none;
+    font-family: inherit;
+  }
+
+  input[type="text"]::placeholder { color: rgba(255, 255, 255, 0.25); }
+
+  button {
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 28px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    box-shadow: 0 4px 12px var(--accent-glow);
+    font-family: inherit;
+  }
+
+  button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+  }
+  button:active {
+    transform: translateY(0);
+  }
+  button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .examples {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .example-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: inherit;
+  }
+
+  .example-btn:hover {
+    border-color: var(--border-hover);
+    color: var(--text);
+    background: var(--surface2);
+  }
+
+  /* Progress Module */
+  #progress {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(16px);
+  }
+
+  .progress-title {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: all 0.3s;
+  }
+
+  .step-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    flex-shrink: 0;
+    transition: all 0.3s;
+  }
+
+  .step.active .step-icon {
+    border-color: var(--accent);
+    background: rgba(100, 108, 255, 0.15);
+    box-shadow: 0 0 10px var(--accent-glow);
+  }
+  .step.active { color: var(--text); font-weight: 500; }
+  .step.done .step-icon {
+    background: rgba(213, 0, 249, 0.15);
+    border-color: var(--accent2);
+    color: var(--text);
+    box-shadow: 0 0 10px rgba(213, 0, 249, 0.3);
+  }
+  .step.done { color: var(--text-muted); }
+
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid transparent;
+    border-top-color: var(--text);
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Report Container */
+  #report-container {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+  }
+
+  .report-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.01);
+  }
+
+  .report-toolbar span {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .copy-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.3s;
+  }
+
+  .copy-btn:hover { color: var(--text); border-color: var(--text-muted); background: var(--surface2); }
+
+  .report-body {
+    padding: 2.5rem;
+    line-height: 1.8;
+    font-weight: 300;
+  }
+
+  /* Premium Markdown Styles */
+  .report-body h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 1rem; color: var(--text); letter-spacing: -0.5px; }
+  .report-body h2 { font-size: 1.3rem; font-weight: 600; margin: 2.5rem 0 1rem; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: .4rem; }
+  .report-body p { margin-bottom: 1rem; color: rgba(255, 255, 255, 0.8); }
+  .report-body a { color: var(--accent); text-decoration: none; font-weight: 500; }
+  .report-body a:hover { text-decoration: underline; }
+  .report-body code { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; font-size: 13px; font-family: monospace; color: #ff8a80; }
+  .report-body table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 14px; }
+  .report-body th { background: var(--surface2); text-align: left; padding: 12px 16px; border: 1px solid var(--border); color: var(--text); font-weight: 600; }
+  .report-body td { padding: 12px 16px; border: 1px solid var(--border); color: rgba(255, 255, 255, 0.8); }
+  .report-body ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+  .report-body li { margin-bottom: .4rem; color: rgba(255, 255, 255, 0.8); }
+  .report-body hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+  .report-body strong { color: var(--text); font-weight: 600; }
+
+  /* Error Box */
+  #error-box {
+    display: none;
+    background: rgba(255, 23, 70, 0.1);
+    border: 1px solid var(--error);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    color: #ff5252;
+    font-size: 14px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+
+  #new-btn {
+    display: none;
+    margin: 1.5rem auto 0;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-weight: 500;
+    box-shadow: none;
+  }
+
+  #new-btn:hover { color: var(--text); border-color: var(--text-muted); background: var(--surface); }
+
+  footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 3rem;
+  }
+
+  footer a { color: var(--text-muted); }
+
+  /* Deep Dive Styles */
+  .deep-dive-box {
+    margin-top: 1.5rem;
+    background: #111a2e;
+    border: 1px solid #1c3563;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .deep-dive-btn {
+    background: #1c3563;
+    color: #58a6ff;
+    border: 1px solid #3860b0;
+    border-radius: var(--radius);
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .deep-dive-btn:hover {
+    background: #23427d;
+    color: #e6edf3;
+  }
+
+  .deep-dive-loader {
+    display: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    text-align: center;
+    padding: 1.5rem;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .deep-dive-loader .spinner {
+    width: 24px;
+    height: 24px;
+  }
+
+  .deep-dive-results {
+    display: none;
+    margin-top: 1.5rem;
+    background: #0d1624;
+    border: 1px solid #1c3563;
+    border-radius: var(--radius);
+    padding: 2rem;
+    line-height: 1.75;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🔍 GitGist <span>AI GitHub Intelligence</span></div>
+  <div class="powered">
+    <span class="pill">Zynd</span>
+    <span class="pill">Apify</span>
+    <span class="pill">Superplane</span>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>Understand any <span class="highlight">GitHub repo</span><br>in seconds</h1>
+    <p>Paste a repo URL. Our autonomous AI agents scrape, analyse, and explain it for you — no browsing required.</p>
+  </div>
+
+  <div class="input-row">
+    <input
+      type="text"
+      id="url-input"
+      placeholder="https://github.com/owner/repo"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <button id="analyse-btn" onclick="startAnalysis()">Analyse →</button>
+  </div>
+
+  <div class="notif-toggles" style="display: flex; justify-content: center; gap: 24px; margin-top: 1rem; margin-bottom: 1.5rem; font-size: 13px;">
+    <label style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); cursor: pointer;">
+      <input type="checkbox" id="discord-toggle" style="accent-color: #58a6ff; width: 14px; height: 14px;">
+      💬 Send Discord Alert
+    </label>
+    <label style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); cursor: pointer;">
+      <input type="checkbox" id="telegram-toggle" style="accent-color: #58a6ff; width: 14px; height: 14px;">
+      ✈️ Send Telegram Alert
+    </label>
+    <label style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); cursor: pointer;">
+      <input type="checkbox" id="notion-toggle" style="accent-color: #58a6ff; width: 14px; height: 14px;">
+      🗒️ Create Notion Wiki
+    </label>
+  </div>
+
+  <div class="examples">
+    <span style="font-size:12px; color:var(--text-muted); align-self:center;">Try:</span>
+    <button class="example-btn" onclick="setExample('https://github.com/langchain-ai/langchain')">langchain</button>
+    <button class="example-btn" onclick="setExample('https://github.com/fastapi/fastapi')">fastapi</button>
+    <button class="example-btn" onclick="setExample('https://github.com/supabase/supabase')">supabase</button>
+    <button class="example-btn" onclick="setExample('https://github.com/vercel/next.js')">next.js</button>
+    <button class="example-btn" onclick="setExample('https://github.com/oven-sh/bun')">bun</button>
+  </div>
+
+  <div id="error-box"></div>
+
+  <div id="progress">
+    <div class="progress-title">Running autonomous pipeline…</div>
+    <div class="steps">
+      <div class="step" id="step-scraping">
+        <div class="step-icon" id="icon-scraping">1</div>
+        <span>Scraper Agent — fetching repo data via Apify</span>
+      </div>
+      <div class="step" id="step-analysing">
+        <div class="step-icon" id="icon-analysing">2</div>
+        <span>Analyser Agent — running LLM intelligence</span>
+      </div>
+      <div class="step" id="step-formatting">
+        <div class="step-icon" id="icon-formatting">3</div>
+        <span>Reporter Agent — formatting final report</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="report-container">
+    <div class="report-toolbar">
+      <span id="report-label">GitGist Report</span>
+      <button class="copy-btn" onclick="copyReport()">Copy Markdown</button>
+    </div>
+    <div class="report-body" id="report-body"></div>
+    
+    <!-- Deep Dive Module -->
+    <div id="deep-dive-section" style="padding: 0 2rem 2rem 2rem;">
+      <hr style="margin-bottom: 2rem;">
+      <div class="deep-dive-box" id="deep-dive-cta">
+        <h3 style="font-size: 15px; margin-bottom: 8px; color: var(--text);">🚀 Want to master this project?</h3>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Our AI agent can scour the web to hunt for official docs, API wikis, and advanced developer tutorials.</p>
+        <button class="deep-dive-btn" onclick="triggerDeepDive()">✨ Start Deep Dive Research</button>
+      </div>
+      
+      <div class="deep-dive-loader" id="deep-dive-loading">
+        <div class="spinner"></div>
+        <div style="font-size: 12px; color: var(--text-muted);">Scouring the web and ecosystem for official docs, advanced tutorials, and guides...</div>
+      </div>
+      
+      <div class="deep-dive-results" id="deep-dive-output"></div>
+    </div>
+  </div>
+
+  <button id="new-btn" onclick="resetUI()">← New Analysis</button>
+</main>
+
+<footer>
+  Built for Bot-a-thon 2025 · <a href="https://github.com" target="_blank">GitHub</a>
+</footer>
+
+<script>
+  const ORCHESTRATOR = window.location.origin;
+  let pollInterval = null;
+  let rawMarkdown = "";
+
+  function setExample(url) {
+    document.getElementById("url-input").value = url;
+  }
+
+  function showError(msg) {
+    const el = document.getElementById("error-box");
+    el.textContent = "⚠️ " + msg;
+    el.style.display = "block";
+  }
+
+  function hideError() {
+    document.getElementById("error-box").style.display = "none";
+  }
+
+  function setStepState(stepId, iconId, state) {
+    const step = document.getElementById(stepId);
+    const icon = document.getElementById(iconId);
+    step.className = "step " + state;
+    if (state === "active") {
+      icon.innerHTML = '<div class="spinner"></div>';
+    } else if (state === "done") {
+      icon.innerHTML = "✓";
+    }
+  }
+
+  function updateSteps(currentStep) {
+    const order = ["scraping", "analysing", "formatting"];
+    const idx = order.indexOf(currentStep);
+    order.forEach((s, i) => {
+      const state = i < idx ? "done" : i === idx ? "active" : "";
+      setStepState(`step-${s}`, `icon-${s}`, state);
+    });
+  }
+
+  async function startAnalysis() {
+    const url = document.getElementById("url-input").value.trim();
+    if (!url) { showError("Please enter a GitHub URL"); return; }
+    if (!url.includes("github.com")) { showError("URL must be a github.com link"); return; }
+
+    const send_discord = document.getElementById("discord-toggle").checked;
+    const send_telegram = document.getElementById("telegram-toggle").checked;
+    const send_notion = document.getElementById("notion-toggle").checked;
+
+    hideError();
+    document.getElementById("analyse-btn").disabled = true;
+    document.getElementById("progress").style.display = "block";
+    document.getElementById("report-container").style.display = "none";
+    document.getElementById("new-btn").style.display = "none";
+    updateSteps("scraping");
+
+    try {
+      const res = await fetch(`${ORCHESTRATOR}/analyse`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, send_discord, send_telegram, send_notion }),
+      });
+      const { job_id, error } = await res.json();
+      if (error) { showError(error); resetBtn(); return; }
+      pollJob(job_id);
+    } catch (e) {
+      showError("Could not reach orchestrator. Is it running?");
+      resetBtn();
+    }
+  }
+
+  function pollJob(jobId) {
+    pollInterval = setInterval(async () => {
+      try {
+        const res = await fetch(`${ORCHESTRATOR}/status/${jobId}`);
+        const job = await res.json();
+
+        if (job.step && job.step !== "queued" && job.step !== "complete") {
+          updateSteps(job.step);
+        }
+
+        if (job.status === "done") {
+          clearInterval(pollInterval);
+          updateSteps("complete");
+          // mark all done
+          ["scraping","analysing","formatting"].forEach(s => setStepState(`step-${s}`, `icon-${s}`, "done"));
+          showReport(job.report, job.url);
+        } else if (job.status === "error") {
+          clearInterval(pollInterval);
+          showError(job.error || "Pipeline failed");
+          resetBtn();
+        }
+      } catch (e) {
+        // polling hiccup, keep trying
+      }
+    }, 2000);
+  }
+
+  function showReport(markdown, url) {
+    rawMarkdown = markdown;
+    document.getElementById("progress").style.display = "none";
+    document.getElementById("report-container").style.display = "block";
+    document.getElementById("new-btn").style.display = "block";
+
+    // Extract repo name for label
+    const match = url.match(/github\.com\/([^/]+\/[^/?\s]+)/);
+    if (match) document.getElementById("report-label").textContent = match[1];
+
+    document.getElementById("report-body").innerHTML = marked.parse(markdown);
+    document.getElementById("analyse-btn").disabled = false;
+  }
+
+  function copyReport() {
+    navigator.clipboard.writeText(rawMarkdown).then(() => {
+      const btn = document.querySelector(".copy-btn");
+      btn.textContent = "Copied!";
+      setTimeout(() => btn.textContent = "Copy Markdown", 1500);
+    });
+  }
+
+  function resetBtn() {
+    document.getElementById("analyse-btn").disabled = false;
+    document.getElementById("progress").style.display = "none";
+  }
+
+  function resetUI() {
+    clearInterval(pollInterval);
+    document.getElementById("url-input").value = "";
+    document.getElementById("report-container").style.display = "none";
+    document.getElementById("new-btn").style.display = "none";
+    document.getElementById("progress").style.display = "none";
+    hideError();
+    document.getElementById("analyse-btn").disabled = false;
+    ["scraping","analysing","formatting"].forEach(s => {
+      const el = document.getElementById(`step-${s}`);
+      el.className = "step";
+      document.getElementById(`icon-${s}`).innerHTML = ["1","2","3"][["scraping","analysing","formatting"].indexOf(s)];
+    });
+    document.getElementById("discord-toggle").checked = false;
+    document.getElementById("telegram-toggle").checked = false;
+    document.getElementById("notion-toggle").checked = false;
+    document.getElementById("deep-dive-cta").style.display = "block";
+    document.getElementById("deep-dive-loading").style.display = "none";
+    document.getElementById("deep-dive-output").style.display = "none";
+    document.getElementById("deep-dive-output").innerHTML = "";
+  }
+
+  async function triggerDeepDive() {
+    const url = document.getElementById("url-input").value.trim();
+    const label = document.getElementById("report-label").textContent.trim();
+    const name = label.split("/")[1] || "the project";
+
+    document.getElementById("deep-dive-cta").style.display = "none";
+    document.getElementById("deep-dive-loading").style.display = "flex";
+    document.getElementById("deep-dive-output").style.display = "none";
+
+    try {
+      const res = await fetch(`${ORCHESTRATOR}/deep-dive`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, name }),
+      });
+      const { output, error } = await res.json();
+      if (error) {
+        showError(error);
+        document.getElementById("deep-dive-cta").style.display = "block";
+        document.getElementById("deep-dive-loading").style.display = "none";
+        return;
+      }
+      
+      document.getElementById("deep-dive-loading").style.display = "none";
+      const outputEl = document.getElementById("deep-dive-output");
+      outputEl.innerHTML = marked.parse(output);
+      outputEl.style.display = "block";
+    } catch (e) {
+      showError("Deep Dive research request failed. Is the server running?");
+      document.getElementById("deep-dive-cta").style.display = "block";
+      document.getElementById("deep-dive-loading").style.display = "none";
+    }
+  }
+
+  // Allow Enter key
+  document.getElementById("url-input").addEventListener("keydown", e => {
+    if (e.key === "Enter") startAnalysis();
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,152 @@
+apiVersion: v1
+kind: Canvas
+metadata:
+  id: 208656a5-885b-4ad6-81d4-b1d0edf267d7
+  name: gitgist
+spec:
+  edges:
+    - sourceId: gitgist-trigger
+      targetId: call-scraper-agent
+      channel: default
+    - sourceId: call-scraper-agent
+      targetId: call-analyser-agent
+      channel: success
+    - sourceId: call-analyser-agent
+      targetId: call-reporter-agent
+      channel: success
+    - sourceId: call-reporter-agent
+      targetId: call-deep-diver-agent
+      channel: success
+    - sourceId: call-deep-diver-agent
+      targetId: notify-completion
+      channel: success
+    - sourceId: call-deep-diver-agent
+      targetId: send-discord-notification
+      channel: success
+    - sourceId: call-deep-diver-agent
+      targetId: send-telegram-notification
+      channel: success
+    - sourceId: call-deep-diver-agent
+      targetId: create-notion-wiki
+      channel: success
+  nodes:
+    - id: gitgist-trigger
+      name: gitgist-trigger
+      type: TYPE_TRIGGER
+      component: webhook
+      configuration:
+        path: /api/v1/webhooks/gitgist
+        authentication: none
+
+    - id: call-scraper-agent
+      name: call-scraper-agent
+      type: TYPE_ACTION
+      component: http
+      configuration:
+        method: POST
+        url: https://humpback-sliding-excursion.ngrok-free.dev/scraper
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          content: "{{ root().data.body.github_url }}"
+
+    - id: call-analyser-agent
+      name: call-analyser-agent
+      type: TYPE_ACTION
+      component: http
+      configuration:
+        method: POST
+        url: https://humpback-sliding-excursion.ngrok-free.dev/analyser
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          content: "{{ $['call-scraper-agent'].data.body.output }}"
+
+    - id: call-reporter-agent
+      name: call-reporter-agent
+      type: TYPE_ACTION
+      component: http
+      configuration:
+        method: POST
+        url: https://humpback-sliding-excursion.ngrok-free.dev/reporter
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          content: "JSON: {{ $['call-analyser-agent'].data.body.output }}\nURL: {{ root().data.body.github_url }}"
+
+    - id: call-deep-diver-agent
+      name: call-deep-diver-agent
+      type: TYPE_ACTION
+      component: http
+      configuration:
+        method: POST
+        url: https://humpback-sliding-excursion.ngrok-free.dev/deep-dive
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          url: "{{ root().data.body.github_url }}"
+          name: "the project"
+
+    - id: send-discord-notification
+      name: send-discord-notification
+      type: TYPE_ACTION
+      component: http
+      configuration:
+        method: POST
+        url: https://humpback-sliding-excursion.ngrok-free.dev/discord/notify
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          url: "{{ root().data.body.github_url }}"
+          name: "the project"
+          send_discord: "{{ root().data.body.send_discord }}"
+
+    - id: send-telegram-notification
+      name: send-telegram-notification
+      type: TYPE_ACTION
+      component: http
+      configuration:
+        method: POST
+        url: https://humpback-sliding-excursion.ngrok-free.dev/telegram/notify
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          url: "{{ root().data.body.github_url }}"
+          name: "the project"
+          send_telegram: "{{ root().data.body.send_telegram }}"
+
+    - id: notify-completion
+      name: notify-completion
+      type: TYPE_ACTION
+      component: http
+      configuration:
+        method: POST
+        url: https://humpback-sliding-excursion.ngrok-free.dev/superplane/result
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          job_id: "{{ root().data.body.job_id }}"
+          report: "{{ $['call-reporter-agent'].data.body.output }}\n\n---\n\n{{ $['call-deep-diver-agent'].data.body.output }}"
+          status: done
+
+    - id: create-notion-wiki
+      name: create-notion-wiki
+      type: TYPE_ACTION
+      component: http
+      configuration:
+        method: POST
+        url: https://humpback-sliding-excursion.ngrok-free.dev/notion/create
+        headers:
+          - name: Content-Type
+            value: application/json
+        body:
+          url: "{{ root().data.body.github_url }}"
+          name: "the project"
+          send_notion: "{{ root().data.body.send_notion }}"

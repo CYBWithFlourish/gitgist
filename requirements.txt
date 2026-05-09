@@ -1,0 +1,9 @@
+zyndai-agent[heartbeat,ngrok]
+langchain
+langchain-openai
+langchain-community
+langchain-classic
+flask
+flask-cors
+requests
+python-dotenv

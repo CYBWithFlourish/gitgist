@@ -1,0 +1,190 @@
+{
+  "protocolVersion": "0.3.0",
+  "name": "gitgist-reporter",
+  "description": "Formats GitGist analysis JSON into a clean markdown report with health score, tech stack, features, and setup guide",
+  "version": "0.1.0",
+  "url": "http://localhost:5003/a2a/v1",
+  "preferredTransport": "JSONRPC",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": true,
+    "stateTransitionHistory": false
+  },
+  "defaultInputModes": [
+    "text/plain",
+    "application/json"
+  ],
+  "defaultOutputModes": [
+    "text/plain",
+    "application/json"
+  ],
+  "skills": [
+    {
+      "id": "default",
+      "name": "gitgist-reporter",
+      "description": "Formats GitGist analysis JSON into a clean markdown report with health score, tech stack, features, and setup guide",
+      "inputModes": [
+        "text/plain",
+        "application/json"
+      ],
+      "outputModes": [
+        "text/plain",
+        "application/json"
+      ],
+      "tags": [
+        "report",
+        "markdown",
+        "formatter",
+        "github",
+        "documentation"
+      ]
+    }
+  ],
+  "securitySchemes": {
+    "zyndSig": {
+      "type": "http",
+      "scheme": "ed25519-envelope",
+      "description": "Per-message Ed25519 signature in Message.metadata['x-zynd-auth']. See zynd-a2a-communication spec."
+    }
+  },
+  "security": [
+    {
+      "zyndSig": []
+    }
+  ],
+  "x-zynd": {
+    "version": 1,
+    "entityId": "zns:379e646b7f8a88089a055110f29407eb",
+    "publicKey": "ed25519:+esb1M9cJLMLExwCV4b+fFMTUA9lXJ7eqfCbdYgzkZY=",
+    "status": "online",
+    "lastUpdatedAt": "2026-05-09T11:16:55.575Z",
+    "registry": "zns01.zynd.ai",
+    "pricing": {
+      "model": "per-request",
+      "currency": "USDC",
+      "rates": {
+        "default": 0.0
+      },
+      "paymentMethods": [
+        "x402"
+      ]
+    },
+    "category": "developer-tools",
+    "tags": [
+      "report",
+      "markdown",
+      "formatter",
+      "github",
+      "documentation"
+    ],
+    "inputSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "content": {
+          "default": "",
+          "title": "Content",
+          "type": "string"
+        },
+        "sender_id": {
+          "default": "unknown",
+          "title": "Sender Id",
+          "type": "string"
+        },
+        "sender_did": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sender Did"
+        },
+        "sender_public_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sender Public Key"
+        },
+        "receiver_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Receiver Id"
+        },
+        "message_type": {
+          "default": "query",
+          "title": "Message Type",
+          "type": "string"
+        },
+        "message_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Message Id"
+        },
+        "conversation_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Conversation Id"
+        },
+        "in_reply_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "In Reply To"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "title": "AgentPayload",
+      "type": "object"
+    }
+  },
+  "signatures": [
+    {
+      "protected": "eyJhbGciOiAiRWREU0EiLCAidHlwIjogImFnZW50LWNhcmQramNzK2p3cyJ9",
+      "signature": "XFBRStQPUSLFpYqWqzE013M_FGekQF85PBvozPrHmXKxe6ISxQOQYpDXB09PuO7aef4-98PvAmAkgcOcJlvMAw",
+      "header": {
+        "kid": "ed25519:+esb1M9cJLMLExwCV4b+fFMTUA9lXJ7eqfCbdYgzkZY="
+      }
+    }
+  ]
+}
