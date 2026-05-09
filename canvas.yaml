@@ -44,7 +44,7 @@ spec:
       component: http
       configuration:
         method: POST
-        url: https://humpback-sliding-excursion.ngrok-free.dev/scraper
+        url: https://gitgist.vercel.app/scraper
         headers:
           - name: Content-Type
             value: application/json
@@ -57,7 +57,7 @@ spec:
       component: http
       configuration:
         method: POST
-        url: https://humpback-sliding-excursion.ngrok-free.dev/analyser
+        url: https://gitgist.vercel.app/analyser
         headers:
           - name: Content-Type
             value: application/json
@@ -70,7 +70,7 @@ spec:
       component: http
       configuration:
         method: POST
-        url: https://humpback-sliding-excursion.ngrok-free.dev/reporter
+        url: https://gitgist.vercel.app/reporter
         headers:
           - name: Content-Type
             value: application/json
@@ -83,7 +83,7 @@ spec:
       component: http
       configuration:
         method: POST
-        url: https://humpback-sliding-excursion.ngrok-free.dev/deep-dive
+        url: https://gitgist.vercel.app/deep-dive
         headers:
           - name: Content-Type
             value: application/json
@@ -97,7 +97,7 @@ spec:
       component: http
       configuration:
         method: POST
-        url: https://humpback-sliding-excursion.ngrok-free.dev/discord/notify
+        url: https://gitgist.vercel.app/discord/notify
         headers:
           - name: Content-Type
             value: application/json
@@ -112,7 +112,7 @@ spec:
       component: http
       configuration:
         method: POST
-        url: https://humpback-sliding-excursion.ngrok-free.dev/telegram/notify
+        url: https://gitgist.vercel.app/telegram/notify
         headers:
           - name: Content-Type
             value: application/json
@@ -127,7 +127,7 @@ spec:
       component: http
       configuration:
         method: POST
-        url: https://humpback-sliding-excursion.ngrok-free.dev/superplane/result
+        url: https://gitgist.vercel.app/superplane/result
         headers:
           - name: Content-Type
             value: application/json
@@ -142,7 +142,7 @@ spec:
       component: http
       configuration:
         method: POST
-        url: https://humpback-sliding-excursion.ngrok-free.dev/notion/create
+        url: https://gitgist.vercel.app/notion/create
         headers:
           - name: Content-Type
             value: application/json
